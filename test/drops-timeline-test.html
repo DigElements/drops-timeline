@@ -1,0 +1,142 @@
+<!--
+Copyright 2017 Next Century Corporation
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <link rel="import" href="../drops-timeline.html">
+  </head>
+
+  <body>
+    <test-fixture id="drops-timeline-fixture">
+      <template>
+        <drops-timeline></drops-timeline>
+      </template>
+    </test-fixture>
+
+    <script>
+      suite('<drops-timeline>', function() {
+        var element;
+
+        setup(function(done) {
+          element = fixture('drops-timeline-fixture');
+
+          element.data = [
+            {
+              count: 14,
+              name: 'Houston, TX, USA',
+              dates: [
+                {
+                  count: 4,
+                  date: new Date('July 01, 2016'),
+                  name: 'Houston, TX, USA'
+                },{
+                  count: 8,
+                  date: new Date('July 02, 2016'),
+                  name: 'Houston, TX, USA'
+                },{
+                  count: 2,
+                  date: new Date('July 03, 2016'),
+                  name: 'Houston, TX, USA'
+                }
+              ]
+            },{
+              count: 4,
+              name: 'Austin, TX, USA',
+              dates: [
+                {
+                  count: 2,
+                  date: new Date('July 02, 2016'),
+                  name: 'Austin, TX, USA'
+                },{
+                  count: 2,
+                  date: new Date('July 04, 2016'),
+                  name: 'Austin, TX, USA'
+                }
+              ]
+            },{
+              count: 18,
+              name: 'Dallas, TX, USA',
+              dates: [
+                {
+                  count: 10,
+                  date: new Date('July 03, 2016'),
+                  name: 'Dallas, TX, USA'
+                },{
+                  count: 8,
+                  date: new Date('July 04, 2016'),
+                  name: 'Dallas, TX, USA'
+                }
+              ]
+            }
+          ];
+
+          element.timestamps = [
+            new Date('July 01, 2016').getTime(),
+            new Date('July 02, 2016').getTime(),
+            new Date('July 04, 2016').getTime(),
+            new Date('July 03, 2016').getTime()
+          ];
+
+          flush(function() {
+            done();
+          });
+        });
+
+        test('default properties have correct values', function() {
+          expect(element.nameProperty).to.equal('name');
+          expect(element.dateProperty).to.equal('date');
+          expect(element.countProperty).to.equal('count');
+        });
+
+        test('_getEndTime returns the day after the latest date in timestamps', function() {
+          expect(element._getEndTime()).to.deep.equal(new Date('July 05, 2016').getTime());
+        });
+
+        test('_getEndTime returns today\'s date if timestamps is empty', function() {
+          element.timestamps = [];
+          expect(element._getEndTime()).to.deep.equal(Date.now());
+        });
+
+        test('_getStartTime returns the day before the latest date in timestamps', function() {
+          expect(element._getStartTime()).to.deep.equal(new Date('June 30, 2016').getTime());
+        });
+
+        test('_getStartTime returns today\'s date if timestamps is empty', function() {
+          element.timestamps = [];
+          expect(element._getStartTime()).to.deep.equal(Date.now());
+        });
+
+        test('_showDataItemInfo returns a function', function() {
+          expect(element._showDataItemInfo()).to.be.a('Function');
+        });
+
+        test('_updateZoom returns a function', function() {
+          expect(element._updateZoom()).to.be.a('Function');
+        });
+
+        test('_updateZoomInfo updates info property', function() {
+          element._updateZoomInfo([new Date('July 01, 2016').getTime(), new Date('July 03, 2016').getTime()]);
+
+          expect(element.info).to.equal('Showing Jul 1, 2016 to Jul 3, 2016');
+        });
+      });
+    </script>
+  </body>
+</html>

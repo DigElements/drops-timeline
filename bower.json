@@ -1,0 +1,32 @@
+{
+  "name": "drops-timeline",
+  "description": "A Polymer Element that creates a timeline using the EventDrops library.",
+  "version": "1.0.0",
+  "authors": ["Next Century Corporation"],
+  "license": "Apache-2.0",
+  "keywords": [
+    "web-component",
+    "polymer",
+    "d3"
+  ],
+  "main": "drops-timeline.html",
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/DigElements/drops-timeline/",
+  "ignore": [
+    "/.*",
+    "/test/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.7.0",
+    "button-action": "DigElements/button-action#^1.0.2",    
+    "eventDrops": "DigElements/EventDrops#DIG-master",
+    "iron-elements": "PolymerElements/iron-elements#^1.0.10",
+    "moment-element": "bendavis78/moment-element#^1.1.0",
+    "paper-styles": "PolymerElements/paper-styles#^1.1.5",
+    "d3-import": "DigElements/d3-import#~1.0.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.1.7",
+    "web-component-tester": "^5.0.0"
+  }
+}

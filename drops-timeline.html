@@ -1,0 +1,384 @@
+<!--
+Copyright 2017 Next Century Corporation
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../button-action/button-action.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../moment-element/moment-with-locales-import.html">
+<link rel="import" href="../paper-styles/color.html">
+<link rel="import" href="../d3-import/d3.html">
+<link rel="import" href="eventdrops.html">
+
+<!--
+A Polymer Element that creates a timeline using the EventDrops library.
+
+### Example
+```html
+  <drops-timeline
+    data="[[data]]"
+    timestamps="[[dates]]"
+    info="{{_info}}">
+  </drops-timeline>
+```
+
+### Styling
+`<drops-timeline>` provides the following custom properties and mixins for styling:
+
+Custom property        | Description                                                | Default
+-----------------------|------------------------------------------------------------|--------------------------
+`--timeline-color-1`   | Color for first row of drops in timeline (16 colors total) | --paper-blue-500
+`--timeline-color-2`   | Second color for drops in timeline                         | --paper-orange-500
+`--timeline-color-3`   | Third color for drops in timeline                          | --paper-green-500
+`--timeline-color-4`   | Fourth color for drops in timeline                         | --paper-red-500
+`--timeline-color-5`   | Fifth color for drops in timeline                          | --paper-purple-500
+`--timeline-color-6`   | Sixth drop timeline color                                  | --paper-yellow-500
+`--timeline-color-7`   | Seventh drop timeline color                                | --paper-indigo-500
+`--timeline-color-8`   | Eighth drop timeline color                                 | --paper-cyan-500
+`--timeline-color-9`   | Ninth drop timeline color                                  | --paper-deep-orange-500
+`--timeline-color-10`  | Tenth drop timeline color                                  | --paper-lime-500
+`--timeline-color-11`  | Eleventh drop timeline color                               | --paper-pink-500
+`--timeline-color-12`  | Twelfth drop timeline color                                | --paper-deep-purple-500
+`--timeline-color-13`  | Thirteenth drop timeline color                             | --paper-amber-500
+`--timeline-color-14`  | Fourteenth drop timeline color                             | --paper-teal-500
+`--timeline-color-15`  | Fifteenth drop timeline color                              | --paper-light-green-500
+`--timeline-color-16`  | Sixteenth drop timeline color                              | --paper-light-blue-500
+
+@demo demo/index.html
+-->
+
+
+<dom-module id="drops-timeline">
+  <style include="iron-flex iron-flex-alignment"></style>
+  <style>
+    :host {
+      display: block;
+      --drops-timeline-color-1: var(--timeline-color-1, --paper-blue-500);
+      --drops-timeline-color-2: var(--timeline-color-2, --paper-orange-500);
+      --drops-timeline-color-3: var(--timeline-color-3, --paper-green-500);
+      --drops-timeline-color-4: var(--timeline-color-4, --paper-red-500);
+      --drops-timeline-color-5: var(--timeline-color-5, --paper-purple-500);
+      --drops-timeline-color-6: var(--timeline-color-6, --paper-yellow-500);
+      --drops-timeline-color-7: var(--timeline-color-7, --paper-indigo-500);
+      --drops-timeline-color-8: var(--timeline-color-8, --paper-cyan-500);
+      --drops-timeline-color-9: var(--timeline-color-9, --paper-deep-orange-500);
+      --drops-timeline-color-10: var(--timeline-color-10, --paper-lime-500);
+      --drops-timeline-color-11: var(--timeline-color-11, --paper-pink-500);
+      --drops-timeline-color-12: var(--timeline-color-12, --paper-deep-purple-500);
+      --drops-timeline-color-13: var(--timeline-color-13, --paper-amber-500);
+      --drops-timeline-color-14: var(--timeline-color-14, --paper-teal-500);
+      --drops-timeline-color-15: var(--timeline-color-15, --paper-light-green-500);
+      --drops-timeline-color-16: var(--timeline-color-16, --paper-light-blue-500);
+    }
+
+    #eventDropsTimeline {
+      font-size: 12px;
+      width: 100%;
+      /* Arbitrary max height to avoid large sections. */
+      max-height: 800px;
+      overflow-y: auto;
+      /* Must manually hide the overflow for IE. */
+      overflow-x: hidden;
+    }
+  </style>
+
+  <template>
+    <div id="eventDropsTimeline"></div>
+    <div class="layout horizontal flex center-justified">
+      <button-action text="Reset Timeline" click-listener="[[_createResetListener()]]"></button-action>
+    </div>
+  </template>
+
+  <script>
+    (function() {
+      'use strict';
+
+      Polymer({
+        is: 'drops-timeline',
+
+        behaviors: [
+          Polymer.IronResizableBehavior
+        ],
+
+        properties: {
+          /**
+           * (Required)
+           *
+           * The data for the event drops chart.  Each item in the data must have {String} "name" and {Array} "dates" properties.
+           * Each item in the dates must have {Number} "count", {Date} "date", and {String} "name" properties.
+           *
+           * @type {Array}
+           */
+          data: {
+            type: Array
+          },
+
+          /**
+           * (Optional)
+           *
+           * The property of the objects in the data containing the name to display for that data.
+           *
+           * @type {String}
+           * @default 'name'
+           */
+          nameProperty: {
+            type: String,
+            value: 'name'
+          },
+
+          /**
+           * (Optional)
+           *
+           * The property of the objects in the data containing the date to display for that data.
+           *
+           * @type {String}
+           * @default 'date'
+           */
+          dateProperty: {
+            type: String,
+            value: 'date'
+          },
+
+          /**
+           * (Optional)
+           *
+           * The property of the objects in the data containing the count for that data.
+           *
+           * @type {String}
+           * @default 'count'
+           */
+          countProperty: {
+            type: String,
+            value: 'count'
+          },
+
+          /**
+           * (Required)
+           *
+           * The list of timestamps as {Number} numerical dates for the date range of the event drops chart.
+           *
+           * @type {Array}
+           */
+          timestamps: {
+            type: Array
+          },
+
+          /**
+           * (Optional)
+           *
+           * The info tooltip for the chart.
+           *
+           * @type {String}
+           */
+          info: {
+            notify: true,
+            type: String
+          },
+
+          /**
+           * The current date range of the event drops chart.
+           *
+           * @type {Array}
+           * @private
+           */
+          _domain: {
+            type: Array
+          }
+        },
+
+        listeners: {
+          // Delete the chart on resize because the chart won't shrink and the width of the chart may make the columns on the page uneven.
+          'iron-resize': '_redrawChart'
+        },
+
+        observers: [
+          '_createChart(data, timestamps)'
+        ],
+
+        /**
+         * Draws the event drops chart if the given data and timestamps are not empty.
+         *
+         * @param {Array} data
+         * @param {Array} timestamps
+         * @private
+         */
+        _createChart: function(data, timestamps) {
+          if(data && data.length && timestamps && timestamps.length) {
+            this._drawChart();
+          }
+        },
+
+        /**
+         * Returns the reset click listener object for a button-action.
+         *
+         * @return {Object}
+         * @private
+         */
+        _createResetListener: function() {
+          var self = this;
+          return {
+            onClick: function() {
+              self._drawChart();
+            }
+          };
+        },
+
+        /**
+         * Redraws the event drops chart using the global data and timestamps.
+         *
+         * @private
+         */
+        _redrawChart: function() {
+          d3.select('#eventDropsTimeline svg').remove();
+          this._createChart();
+        },
+
+        /**
+         * Draws the event drops chart using the global data and timestamps.
+         *
+         * @private
+         */
+        _drawChart: function() {
+          var color = d3.scale.ordinal().range([
+            this.getComputedStyleValue('--drops-timeline-color-1'),
+            this.getComputedStyleValue('--drops-timeline-color-2'),
+            this.getComputedStyleValue('--drops-timeline-color-3'),
+            this.getComputedStyleValue('--drops-timeline-color-4'),
+            this.getComputedStyleValue('--drops-timeline-color-5'),
+            this.getComputedStyleValue('--drops-timeline-color-6'),
+            this.getComputedStyleValue('--drops-timeline-color-7'),
+            this.getComputedStyleValue('--drops-timeline-color-8'),
+            this.getComputedStyleValue('--drops-timeline-color-9'),
+            this.getComputedStyleValue('--drops-timeline-color-10'),
+            this.getComputedStyleValue('--drops-timeline-color-11'),
+            this.getComputedStyleValue('--drops-timeline-color-12'),
+            this.getComputedStyleValue('--drops-timeline-color-13'),
+            this.getComputedStyleValue('--drops-timeline-color-14'),
+            this.getComputedStyleValue('--drops-timeline-color-15'),
+            this.getComputedStyleValue('--drops-timeline-color-16')
+          ]);
+
+          var endTime = this._getEndTime();
+          var startTime = this._getStartTime();
+
+          // Use the width of the timeline container.
+          var container = document.getElementById('eventDropsTimeline');
+          var width = (container ? parseInt(container.offsetWidth, 10) : 600);
+
+          var chart = d3.chart.eventDrops();
+          chart.eventLineColor(function(datum, index) {
+            return color(index);
+          });
+          chart.start(new Date(startTime));
+          chart.end(new Date(endTime));
+          chart.width(width);
+          chart.margin({
+            top: 60,
+            left: 175,
+            bottom: 20,
+            right: 20
+          });
+          chart.eventHover(this._showDataItemInfo());
+          chart.eventZoom(this._updateZoom());
+
+          d3.select('#eventDropsTimeline')
+            .datum(this.data)
+            .call(chart);
+
+          d3.selectAll('#eventDropsTimeline svg').style('cursor', 'pointer');
+
+          d3.selectAll('.y-tick').style({
+            stroke: 'black',
+            'stroke-width': '2px'
+          });
+
+          // The library fails to set the fill making it black by default so we must set the fill to transparent ourselves.
+          d3.select('.zoom').style('fill', 'transparent');
+        },
+
+        /**
+         * Returns the end time for the event drops chart. Uses the day after the most recent date so that all data points are visible.
+         *
+         * @return {Number}
+         * @private
+         */
+        _getEndTime: function() {
+          if(this.timestamps.length) {
+            return Date.parse(moment.utc(Math.max.apply(null, this.timestamps) + (60 * 60 * 24 * 1000)).format('MMM D, YYYY'));
+          }
+          return Date.now();
+        },
+
+        /**
+         * Returns the start time for the event drops chart. Uses the day before the earliest date so that all data points are visible.
+         *
+         * @return {Number}
+         * @private
+         */
+        _getStartTime: function() {
+          if(this.timestamps.length) {
+            return Date.parse(moment.utc(Math.min.apply(null, this.timestamps) - (60 * 60 * 24 * 1000)).format('MMM D, YYYY'));
+          }
+          return Date.now();
+        },
+
+        /**
+         * Returns the callback that shows a given data item from the event drops chart in the info label.
+         *
+         * @return {Function}
+         * @private
+         */
+        _showDataItemInfo: function() {
+          var self = this;
+          return function(data) {
+            if(data) {
+              var object = d3.select(data).data()[0];
+              self.set('info', moment.utc(new Date(object[self.dateProperty])).format('MMM D, YYYY') + ':  ' +
+                object[self.nameProperty] + ' (' + object[self.countProperty] + ')');
+            } else if(self.domain) {
+              self._updateZoomInfo(self.domain);
+            }
+          };
+        },
+
+        /**
+         * Returns the callback that updates the date range for the zoom from the event drops chart in the info label.
+         *
+         * @return {Function}
+         * @private
+         */
+        _updateZoom: function() {
+          var self = this;
+          return function(zoom) {
+            self.domain = zoom.domain();
+            self._updateZoomInfo(self.domain);
+          };
+        },
+
+        /**
+         * Updates the date range for the zoom from the event drops chart in the info label using the given array.
+         *
+         * @param {Array} domain
+         * @private
+         */
+        _updateZoomInfo: function(domain) {
+          this.set('info', 'Showing ' + moment.utc(new Date(domain[0])).format('MMM D, YYYY') + ' to ' +
+            moment.utc(new Date(domain[1])).format('MMM D, YYYY'));
+        }
+      });
+    })();
+  </script>
+</dom-module>

@@ -1,0 +1,100 @@
+<!--
+Copyright 2017 Next Century Corporation
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>drops-timeline Demo</title>
+    <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+    <link rel="import" href="../drops-timeline.html">
+  </head>
+  <body unresolved>
+    <template is="dom-bind" id="demo">
+      <span>Drops timeline example:</span>
+
+    <drops-timeline
+      data="[[data]]"
+      timestamps="[[dates]]"
+      info="{{_info}}">
+    </drops-timeline>
+
+    </template>
+    <script>
+      (function(document) {
+        var demo = document.querySelector('#demo');
+
+        demo.data = [
+          {
+            count: 14,
+            name: 'Houston, TX, USA', 
+            dates: [
+              {
+                count: 4,
+                date: new Date('July 01, 2016'),
+                name: 'Houston, TX, USA'
+              },{
+                count: 8,
+                date: new Date('July 02, 2016'),
+                name: 'Houston, TX, USA'
+              },{
+                count: 2,
+                date: new Date('July 03, 2016'),
+                name: 'Houston, TX, USA'
+              }
+            ]
+          },{
+            count: 4,
+            name: 'Austin, TX, USA', 
+            dates: [
+              {
+                count: 2,
+                date: new Date('July 02, 2016'),
+                name: 'Austin, TX, USA'
+              },{
+                count: 2,
+                date: new Date('July 04, 2016'),
+                name: 'Austin, TX, USA'
+              }
+            ]
+          },{
+            count: 18,
+            name: 'Dallas, TX, USA', 
+            dates: [
+              {
+                count: 10,
+                date: new Date('July 03, 2016'),
+                name: 'Dallas, TX, USA'
+              },{
+                count: 8,
+                date: new Date('July 04, 2016'),
+                name: 'Dallas, TX, USA'
+              }
+            ]
+          }
+        ];
+
+        demo.dates = [
+          new Date('July 01, 2016').getTime(),
+          new Date('July 02, 2016').getTime(),
+          new Date('July 04, 2016').getTime(),
+          new Date('July 03, 2016').getTime()
+        ];
+
+      })(document);
+    </script>
+  </body>
+</html>
