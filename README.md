@@ -32,3 +32,24 @@ Custom property        | Description                                            
 `--timeline-color-14`  | Fourteenth drop timeline color                             | --paper-teal-500
 `--timeline-color-15`  | Fifteenth drop timeline color                              | --paper-light-green-500
 `--timeline-color-16`  | Sixteenth drop timeline color                              | --paper-light-blue-500
+
+### Dependencies
+
+Dependencies are installed using [Bower](http://bower.io/):
+
+    npm install -g bower
+    bower install
+
+### Testing
+
+Tests are run using [web-component-tester](https://github.com/Polymer/web-component-tester):
+
+    npm install -g web-component-tester
+    wct
+
+### Demonstration & Documentation
+
+Demonstration and documentation are viewed using [polyserve](https://github.com/PolymerLabs/polyserve):
+
+    npm install -g polyserve
+    polyserve
