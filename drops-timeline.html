@@ -97,9 +97,11 @@ Custom property        | Description                                            
 
   <template>
     <div id="eventDropsTimeline"></div>
-    <div class="layout horizontal flex center-justified">
-      <button-action text="Reset Timeline" click-listener="[[_createResetListener()]]"></button-action>
-    </div>
+    <template is="dom-if" if="[[_doesHaveData(data, timestamps)]]">
+      <div class="layout horizontal flex center-justified">
+        <button-action text="Reset Timeline" click-listener="[[_createResetListener()]]"></button-action>
+      </div>
+    </template>
   </template>
 
   <script>
@@ -205,8 +207,18 @@ Custom property        | Description                                            
         },
 
         observers: [
-          '_createChart(data, timestamps)'
+          '_createNewChart(data, timestamps)'
         ],
+
+        /**
+         * Clears the event drops chart.
+         *
+         * @private
+         */
+        _clearChart: function() {
+          d3.select('#eventDropsTimeline svg').remove();
+          this.set('info', '');
+        },
 
         /**
          * Draws the event drops chart if the given data and timestamps are not empty.
@@ -215,9 +227,11 @@ Custom property        | Description                                            
          * @param {Array} timestamps
          * @private
          */
-        _createChart: function(data, timestamps) {
-          if(data && data.length && timestamps && timestamps.length) {
+        _createNewChart: function(data, timestamps) {
+          if(this._doesHaveData(data, timestamps)) {
             this._drawChart();
+          } else {
+            this._clearChart();
           }
         },
 
@@ -237,13 +251,26 @@ Custom property        | Description                                            
         },
 
         /**
+         * Returns whether the given arrays are not empty.
+         *
+         * @param {Array} data
+         * @param {Array} timestamps
+         * @private
+         */
+        _doesHaveData: function(data, timestamps) {
+          return data && data.length && timestamps && timestamps.length;
+        },
+
+        /**
          * Redraws the event drops chart using the global data and timestamps.
          *
          * @private
          */
         _redrawChart: function() {
-          d3.select('#eventDropsTimeline svg').remove();
-          this._createChart();
+          this._clearChart();
+          if(this._doesHaveData(this.data, this.timestamps)) {
+            this._drawChart();
+          }
         },
 
         /**
